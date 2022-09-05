@@ -8,10 +8,10 @@ namespace XPaidMerchantIntegrationExample
 {
     public class XPaidClient
     {
-        private const string HostUrl = "https://localhost:44354";
+        private const string HostUrl = "https://api.exchangepaid.com";
 
-        private const string ApiKey = "22237f2a-655c-4e70-b346-a24024533b56";
-        private const string Secret = "6dedd1caecfd11e8447827af1e638e61d0c29a1290eee1d8d32b000e0200ec9b";
+        private const string ApiKey = "";
+        private const string Secret = "";
 
         public InvoiceDTO GetInvoice(string externalId)
         {
