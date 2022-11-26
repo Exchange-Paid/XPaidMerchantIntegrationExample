@@ -37,7 +37,7 @@ namespace XPaidMerchantIntegrationExample
 
             var bodyJson = JsonConvert.SerializeObject(body);
 
-            SignRequest(httpWebRequest, path, bodyJson);
+            SignRequest(httpWebRequest, path);
 
             using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
             {
@@ -66,24 +66,29 @@ namespace XPaidMerchantIntegrationExample
             return response;
         }
 
-        private void SignRequest(HttpWebRequest httpWebRequest, string path, string bodyJson = null)
+        private void SignRequest(HttpWebRequest httpWebRequest, string path)
         {
             var payloadJson = JsonConvert.SerializeObject(new
             {
-                request = path,
-                data = bodyJson != null ? Convert.ToBase64String(Encoding.UTF8.GetBytes(bodyJson)) : null
+                request = path
             });
-            var payloadBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(payloadJson));
 
-            using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(Secret));
+            var payloadBytes = Encoding.UTF8.GetBytes(payloadJson);
+            var payloadBase64 = Convert.ToBase64String(payloadBytes);
 
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payloadBase64));
+            using (var rsa = RSA.Create(1024))
+            {
+                rsa.ImportRSAPrivateKey(Convert.FromBase64String(Secret), out var length);
 
-            var signature = Convert.ToHexString(computedHash);
+                var signBytes = rsa.SignData(payloadBytes, 0, payloadBytes.Length,
+                    HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1);
 
-            httpWebRequest.Headers.Add("X-TXC-APIKEY", ApiKey);
-            httpWebRequest.Headers.Add("X-TXC-SIGNATURE", signature);
-            httpWebRequest.Headers.Add("X-TXC-PAYLOAD", payloadBase64);
+                var signature = Convert.ToBase64String(signBytes);
+
+                httpWebRequest.Headers.Add("X-TXC-CLIENT", ApiKey);
+                httpWebRequest.Headers.Add("X-TXC-SIGNATURE", signature);
+                httpWebRequest.Headers.Add("X-TXC-PAYLOAD", payloadBase64);
+            }
         }
     }
 }
