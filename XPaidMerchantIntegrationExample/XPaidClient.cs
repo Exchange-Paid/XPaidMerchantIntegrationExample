@@ -8,7 +8,7 @@ namespace XPaidMerchantIntegrationExample
 {
     public class XPaidClient
     {
-        private const string HostUrl = "https://api.exchangepaid.com";
+        private const string HostUrl = "https://api.xpaids.com/External";
 
         private const string ApiKey = "";
         private const string Secret = "";
